@@ -11,8 +11,22 @@ mongoose.connect(mongoDB, {useNewUrlParser:true}, function(error){
 });
 
 var Donation = require('./models/donation')
-const express = require('express')
+// const express = require('express')
+var express = require('express')
+
+
+var bodyParser = require('body-parser')
+
+
 const app = express()
+
+
+// create application/json parser
+var jsonParser = bodyParser.json()
+
+// create application/x-www-form-urlencoded parser
+var urlencodedParser = bodyParser.urlencoded({ extended: false })
+
 
 app.get('/', function (req, res) {
     var options = {};
@@ -28,22 +42,25 @@ app.get('/', function (req, res) {
             return res.status(200).json(donations);
         })
         .catch(function(err){
-            return res.status(500).json({status: false});
         });
 })
 
-app.get('/new', function (req, res) {
-    var donation = new Donation({
-        donor_id: 1111,
-        donor_name: 'xxxx',
-        donor_email: 'sss@gmail.com',
-        donor_gender: 'm',
-        donor_address: 'xxxxxx address',
-        donation_amount: 200
-    });
-    donation.save(function (err) {
-        if (err) return 'ssss'
-    });
+app.post('/', jsonParser, function (req, res) {
+    var options = {
+        donor_id: req.body.donor_id,
+        donor_name : req.body.donor_name,
+        donor_email: req.body.donor_email,
+        donor_gender: req.body.donor_gender,
+        donor_address: req.body.donor_address,
+        donation_amount: req.body.donation_amount,
+    }
+    var donation = new Donation(options);
+    donation.save()
+        .then(function(new_donation){
+            return res.status(200).json(new_donation);
+        })
+        .catch(function(err){
+        });
 
     res.status(200).json(donation);
 })
